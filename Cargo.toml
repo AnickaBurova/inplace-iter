@@ -2,6 +2,7 @@
 name = "inplace-iter"
 version = "0.1.0"
 edition = "2024"
+description = "Efficient in-place iteration with O(1) element removal and taking operations"
 authors = ["Anicka Burova <anicka.burova@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/anickaburova/inplace-iter"
