@@ -2,7 +2,14 @@
 name = "inplace-iter"
 version = "0.1.0"
 edition = "2024"
-
+authors = ["Anicka Burova <anicka.burova@gmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/anickaburova/inplace-iter"
+readme = "README.md"
+keywords = ["iterator", "in-place", "removal", "take"]
+categories = ["algorithms", "data-structures"]
+homepage = "https://github.com/anickaburova/inplace-iter"
+documentation = "https://docs.rs/inplace-iter"
 [features]
 default = ["loop-lifetime-guard"]
 #default = []
