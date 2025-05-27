@@ -7,13 +7,11 @@ use crate::removable_iterator::RemovableItem;
 /// An iterator which allows for the removal of items from the underlying vector.
 /// The iterator will swap the current item with the last item, so the result will
 /// cause unordered vector. Don't use when order is important.
-pub struct RemovableVecIterator<'a, T> {
-    /// A mutable reference to the vector from which items are taken.
-    marked: &'a mut Vec<T>,
+pub struct RemovableVecIterator<T> {
     /// A raw pointer to the vector data for unsafe access.
     data: *mut Vec<T>,
     /// A flag indicating whether an item has already been taken.
-    removed: Rc<RefCell<bool>>,
+    removed: bool,
     /// The current index in the vector, or None if iteration hasn't started.
     index: Option<usize>,
     /// The rotten indicator given to the last generated iterator item.
@@ -23,7 +21,7 @@ pub struct RemovableVecIterator<'a, T> {
 }
 
 #[cfg(feature = "loop-lifetime-guard")]
-impl<'a, T> Drop for RemovableVecIterator<'a, T> {
+impl<T> Drop for RemovableVecIterator<T> {
     fn drop(&mut self) {
         if let Some(rotten) = self.last_rotten.take() {
             *rotten.borrow_mut() = true;
@@ -38,7 +36,7 @@ pub struct RemovableVecItem<T> {
     /// The index of the item within the vector.
     index: usize,
     /// A reference-counted cell indicating whether the item has been taken.
-    removed: Rc<RefCell<bool>>,
+    removed: *mut bool,
     /// Indicator that this iterator item should no longer be used!
     #[cfg(feature = "loop-lifetime-guard")]
     rotten: Rc<RefCell<bool>>,
@@ -59,8 +57,8 @@ impl<T> RemovableItem<T> for RemovableVecItem<T> {
     fn remove(self) {
         #[cfg(feature = "loop-lifetime-guard")]
         self.check_rotten();
-        *self.removed.borrow_mut() = true;
         unsafe {
+            *self.removed = true;
             let v = &mut (*self.data);
             let _ =if self.index == v.len() {
                 // at the last item, no more items
@@ -85,14 +83,12 @@ impl<T> RemovableItem<T> for RemovableVecItem<T> {
     }
 }
 
-impl<'a, T> RemovableVecIterator<'a, T> {
-    pub fn new(v: &'a mut Vec<T>) -> Self {
+impl<T> RemovableVecIterator<T> {
+    pub fn new(v: &mut Vec<T>) -> Self {
         let data = v as *mut Vec<T>;
-        let marked = v;
         Self {
-            marked,
             data,
-            removed: Rc::new(RefCell::new(false)),
+            removed: false,
             index: None,
             #[cfg(feature = "loop-lifetime-guard")]
             last_rotten: None,
@@ -100,7 +96,7 @@ impl<'a, T> RemovableVecIterator<'a, T> {
     }
 }
 
-impl<'a, T> Iterator for RemovableVecIterator<'a, T> {
+impl<T> Iterator for RemovableVecIterator<T> {
     type Item = RemovableVecItem<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -108,11 +104,15 @@ impl<'a, T> Iterator for RemovableVecIterator<'a, T> {
         if let Some(rotten) = self.last_rotten.take() {
             *rotten.borrow_mut() = true;
         }
-        if self.marked.is_empty() {
-            return None;
-        }
-        let index = if *self.removed.borrow() {
-            *self.removed.borrow_mut() = false;
+        let len = unsafe {
+            let v = &mut (*self.data);
+            if v.is_empty() {
+                return None;
+            }
+            v.len()
+        };
+        let index = if self.removed {
+            self.removed = false;
             self.index.unwrap() // if taken, then index is set and we don't increment to the next
         } else if let Some(index) = self.index {
             // move to the next item
@@ -123,7 +123,7 @@ impl<'a, T> Iterator for RemovableVecIterator<'a, T> {
             self.index = Some(0);
             0
         };
-        if index < self.marked.len() {
+        if index < len {
             #[cfg(feature = "loop-lifetime-guard")]
             let rotten = {
                 let rotten = Rc::new(RefCell::new(false));
@@ -133,7 +133,7 @@ impl<'a, T> Iterator for RemovableVecIterator<'a, T> {
             Some(RemovableVecItem {
                 data: self.data,
                 index,
-                removed: self.removed.clone(),
+                removed: &mut self.removed,
                 #[cfg(feature = "loop-lifetime-guard")]
                 rotten,
             })
