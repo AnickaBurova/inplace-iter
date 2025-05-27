@@ -1,0 +1,11 @@
+[package]
+name = "inplace-iter"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = ["loop-lifetime-guard"]
+#default = []
+loop-lifetime-guard = []
+
+[dependencies]
