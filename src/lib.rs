@@ -18,8 +18,7 @@
 //! incorrect usage can lead to undefined behavior. Always follow these guidelines:
 //!
 //! 1. Don't hold multiple mutable references to the same element
-//! 2. Don't use an item after it has been removed/taken
-//! 3. Enable the `loop-lifetime-guard` feature during development for additional safety checks
+//! 2. Enable the `loop-lifetime-guard` feature during development for additional safety checks
 //!
 //! ## Examples
 //!
@@ -35,7 +34,26 @@
 //! }
 //! assert_eq!(numbers, vec![1, 5, 3]);
 //! ```
+//! 
+//! ### Removing elements while iterating with mutable access
+//! ```
+//! use inplace_iter::prelude::*;
 //!
+//! let mut numbers = vec![1, 2, 3, 4, 5];
+//! for mut item in numbers.removable_iter_mut() {
+//!     if *item.get() % 2 == 0 {
+//!         // Remove even numbers
+//!         item.remove();
+//!     } else {
+//!         // Double odd numbers
+//!         *item.get_mut() *= 2;
+//!     }
+//! }
+//! // Note: The order of remaining elements is not preserved
+//! assert_eq!(numbers.len(), 3);
+//! assert_eq!(numbers, vec![2, 10, 6]);
+//! ```
+//! 
 //! ### Taking elements while iterating
 //! ```
 //! use inplace_iter::prelude::*;
@@ -49,6 +67,26 @@
 //! }
 //! assert_eq!(sum, 9); // 4 + 5
 //! assert_eq!(numbers.len(), 3);
+//! ```
+//! 
+//! ### Taking elements while iterating with mutable access
+//! ```
+//! use inplace_iter::prelude::*;
+//!
+//! let mut numbers = vec![1, 2, 3, 4, 5];
+//! let mut sum = 0;
+//! for mut item in numbers.takeable_iter_mut() {
+//!     if *item.get() > 3 {
+//!         // Take ownership of elements > 3
+//!         sum += item.take();
+//!     } else {
+//!         // Double odd numbers
+//!         *item.get_mut() *= 2;
+//!     }
+//! }
+//! assert_eq!(sum, 9); // 4 + 5
+//! assert_eq!(numbers.len(), 3);
+//! assert_eq!(numbers, vec![2, 4, 6]);
 //! ```
 //!
 //! ## Features
@@ -67,6 +105,8 @@ mod inplace_vector;
 
 pub mod prelude {
     pub use crate::removable_iterator::RemovableItem;
+    pub use crate::removable_iterator::RemovableItemMut;
     pub use crate::takeable_iterator::TakeableItem;
+    pub use crate::takeable_iterator::TakeableItemMut;
     pub use crate::inplace_vector::InplaceVector;
 }

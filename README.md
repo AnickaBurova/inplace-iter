@@ -58,6 +58,25 @@ assert_eq!(long_names, vec!["Alice".to_string(), "Charlie".to_string()]);
 assert_eq!(names.len(), 1);
 assert_eq!(names[0], "Bob");
 ```
+### Taking Elements with Mutable Access
+```rust
+use inplace_iter::prelude::*;
+
+let mut numbers = vec![1, 2, 3, 4, 5];
+let mut sum = 0;
+for mut item in numbers.takeable_iter_mut() {
+    if *item.get() > 3 {
+        // Take ownership of elements > 3
+        sum += item.take();
+    } else {
+        // Double odd numbers
+        *item.get_mut() *= 2;
+    }
+}
+assert_eq!(sum, 9); // 4 + 5
+assert_eq!(numbers.len(), 3);
+assert_eq!(numbers, vec![2, 4, 6]);
+```
 
 ## Safety
 
@@ -66,6 +85,21 @@ This library uses `unsafe` code internally to provide its functionality. While t
 1. Don't hold multiple mutable references to the same element
 2. Don't use an item after it has been removed/taken
 3. The `loop-lifetime-guard` feature (enabled by default) adds runtime checks to detect invalid item usage
+
+
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.2.0] - 2025-05-28
+### Added
+- Mutable versions of all iterators (`iter_mut()` variants)
+
 
 ## License
 

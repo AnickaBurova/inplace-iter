@@ -3,6 +3,8 @@ use std::cell::RefCell;
 #[cfg(feature = "loop-lifetime-guard")]
 use std::rc::Rc;
 use crate::prelude::{RemovableItem, TakeableItem};
+use crate::removable_iterator::RemovableItemMut;
+use crate::takeable_iterator::TakeableItemMut;
 
 /// An iterator which allows you to take items from the underlying vector.
 ///
@@ -60,6 +62,33 @@ impl<T> TakeableItem<T> for InplaceVecItem<T> {
 
     fn get(&self) -> &T {
         self.get_value()
+    }
+}
+
+impl<T> TakeableItemMut<T> for InplaceVecItem<T> {
+    fn take(self) -> T {
+        self.take_value()
+    }
+
+    fn get(&self) -> &T {
+        self.get_value()
+    }
+    fn get_mut(&self) -> &mut T {
+        self.get_value_mut()
+    }
+}
+
+impl<T> RemovableItemMut<T> for InplaceVecItem<T> {
+    fn remove(self) {
+        let _ = self.take_value();
+    }
+
+    fn get(&self) -> &T {
+        self.get_value()
+    }
+
+    fn get_mut(&mut self) -> &mut T {
+        self.get_value_mut()
     }
 }
 
@@ -186,6 +215,15 @@ impl<T> InplaceVecItem<T> {
         unsafe {
             let v = &mut (*self.data);
             &(*v.as_ptr().add(self.index))
+        }
+    }
+
+    pub(crate) fn get_value_mut(&self) -> &mut T {
+        #[cfg(feature = "loop-lifetime-guard")]
+        self.check_rotten();
+        unsafe {
+            let v = &mut (*self.data);
+            &mut (*v.as_mut_ptr().add(self.index))
         }
     }
 }

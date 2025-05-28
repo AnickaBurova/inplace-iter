@@ -1,6 +1,6 @@
 use crate::inplace_vec_iterator::InplaceVecIterator;
-use crate::removable_iterator::RemovableItem;
-use crate::takeable_iterator::TakeableItem;
+use crate::removable_iterator::{RemovableItem, RemovableItemMut};
+use crate::takeable_iterator::{TakeableItem, TakeableItemMut};
 
 /// A trait that extends collections with methods for in-place iteration with removal/take operations.
 ///
@@ -57,6 +57,17 @@ pub trait InplaceVector<T> {
     /// - The order of elements is not preserved when taking elements
     fn takeable_iter(&mut self) -> impl Iterator<Item = impl TakeableItem<T>>;
     
+    /// Returns an iterator that allows taking ownership of elements during iteration.
+    ///
+    /// The iterator yields items that implement `TakeableItem<T>`, which provides
+    /// a `take()` method to remove and return the current element.
+    ///
+    /// # Performance
+    ///
+    /// - Taking an element is O(1) time complexity
+    /// - The order of elements is not preserved when taking elements
+    fn takeable_iter_mut(&mut self) -> impl Iterator<Item = impl TakeableItemMut<T>>;
+    
     /// Returns an iterator that allows removing elements during iteration.
     ///
     /// The iterator yields items that implement `RemovableItem<T>`, which provides
@@ -67,6 +78,17 @@ pub trait InplaceVector<T> {
     /// - Removal is O(1) time complexity
     /// - The order of elements is not preserved when removing elements
     fn removable_iter(&mut self) -> impl Iterator<Item = impl RemovableItem<T>>;
+
+    /// Returns an iterator that allows removing elements during iteration.
+    ///
+    /// The iterator yields items that implement `RemovableItem<T>`, which provides
+    /// a `remove()` method to remove the current element.
+    ///
+    /// # Performance
+    ///
+    /// - Removal is O(1) time complexity
+    /// - The order of elements is not preserved when removing elements
+    fn removable_iter_mut(&mut self) -> impl Iterator<Item = impl RemovableItemMut<T>>;
 }
 
 impl<T> InplaceVector<T> for Vec<T> {
@@ -74,7 +96,15 @@ impl<T> InplaceVector<T> for Vec<T> {
         InplaceVecIterator::new(self)
     }
     
+    fn takeable_iter_mut(&mut self) -> impl Iterator<Item = impl TakeableItemMut<T>> {
+        InplaceVecIterator::new(self)
+    }
+    
     fn removable_iter(&mut self) -> impl Iterator<Item = impl RemovableItem<T>> {
+        InplaceVecIterator::new(self)
+    }
+    
+    fn removable_iter_mut(&mut self) -> impl Iterator<Item = impl RemovableItemMut<T>> {
         InplaceVecIterator::new(self)
     }
 }
