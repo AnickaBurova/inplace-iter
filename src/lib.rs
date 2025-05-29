@@ -4,6 +4,10 @@
 //! specifically optimized for scenarios where you need to remove or take elements
 //! while iterating over a collection.
 //! Removing or taking elements could change the order of elements in the collection.
+//! Special iterator wrappers allows confirming/cancelling the removals.
+//! Confirmation is only applicable to removable iterators, as the actual items are kept in the
+//! collection until confirmation is received. Cannot be implemented for takeable iterators for the
+//! obvious reasons.
 //!
 //! ## Features
 //!
@@ -89,6 +93,42 @@
 //! assert_eq!(numbers, vec![2, 4, 6]);
 //! ```
 //!
+//! ### Removing elements while iterating with confirmation
+//! ```
+//! use inplace_iter::prelude::*;
+//!
+//! let mut numbers = vec![1, 2, 3, 4, 5];
+//! let mut confirm = numbers.removable_confirm_iter();
+//! for item in confirm.iter() {
+//!     if *item.get() % 2 == 0 {
+//!         item.remove(); // Efficiently remove even numbers
+//!     }
+//! }
+//! // Multiple calls to `iter()` are allowed, and the subsequent iterations will not yield the removed elements.
+//! let next_iter = confirm.iter().map(|i| *i.get()).collect::<Vec<_>>();
+//! assert_eq!(next_iter, vec![1,5,3]);
+//! confirm.confirm_removals();
+//!
+//!
+//! assert_eq!(numbers, vec![1, 5, 3]);
+//! ```
+//!
+//! ### Removing elements while iterating with confirmation, but cancelling
+//! ```
+//! use inplace_iter::prelude::*;
+//!
+//! let mut numbers = vec![1, 2, 3, 4, 5];
+//! let mut confirm = numbers.removable_confirm_iter();
+//! for item in confirm.iter() {
+//!     if *item.get() % 2 == 0 {
+//!         item.remove(); // Efficiently remove even numbers
+//!     }
+//! }
+//! confirm.cancel_removals();
+//!// Order after cancellation is not guaranteed. Also, if used on mutable iterator, the elements will stay
+//!// modified after cancelling!
+//! assert_eq!(numbers, vec![1, 5, 3, 4, 2]);
+//! ```
 //! ## Features
 //!
 //! - `loop-lifetime-guard`: Enables additional runtime checks to detect if the item is accessed outside
@@ -96,6 +136,8 @@
 
 mod removable_iterator;
 mod removable_iterator_vec;
+
+mod removable_confirm_iterator_vec;
 
 mod takeable_iterator;
 mod takeable_iterator_vec;
@@ -109,4 +151,5 @@ pub mod prelude {
     pub use crate::takeable_iterator::TakeableItem;
     pub use crate::takeable_iterator::TakeableItemMut;
     pub use crate::inplace_vector::InplaceVector;
+    pub use crate::removable_confirm_iterator_vec::RemovableConfirmIterator;
 }

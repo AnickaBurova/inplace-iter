@@ -78,6 +78,42 @@ assert_eq!(numbers.len(), 3);
 assert_eq!(numbers, vec![2, 4, 6]);
 ```
 
+### Removing elements while iterating with confirmation
+```rust
+use inplace_iter::prelude::*;
+
+let mut numbers = vec![1, 2, 3, 4, 5];
+let mut confirm = numbers.removable_confirm_iter();
+for item in confirm.iter() {
+    if *item.get() % 2 == 0 {
+        item.remove(); // Efficiently remove even numbers
+    }
+}
+// Multiple calls to `iter()` are allowed, and the subsequent iterations will not yield the removed elements.
+let next_iter = confirm.iter().map(|i| *i.get()).collect::<Vec<_>>();
+assert_eq!(next_iter, vec![1,5,3]);
+confirm.confirm_removals();
+
+
+assert_eq!(numbers, vec![1, 5, 3]);
+```
+
+### Removing elements while iterating with confirmation, but cancelling
+```rust
+use inplace_iter::prelude::*;
+
+let mut numbers = vec![1, 2, 3, 4, 5];
+let mut confirm = numbers.removable_confirm_iter();
+for item in confirm.iter() {
+    if *item.get() % 2 == 0 {
+        item.remove(); // Efficiently remove even numbers
+    }
+}
+confirm.cancel_removals();
+// Order after cancellation is not guaranteed. Also, if used on mutable iterator, the elements will stay
+// modified after cancelling!
+assert_eq!(numbers, vec![1, 5, 3, 4, 2]);
+```
 ## Safety
 
 This library uses `unsafe` code internally to provide its functionality. While the API is designed to be safe, incorrect usage can lead to undefined behavior. Always follow these guidelines:
@@ -99,6 +135,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2025-05-28
 ### Added
 - Mutable versions of all iterators (`iter_mut()` variants)
+
+## [0.3.0] - 2025-05-29
+### Added
+- Confirmation of removals iterator wrapper (mut and const)
 
 
 ## License

@@ -1,4 +1,5 @@
 use crate::inplace_vec_iterator::InplaceVecIterator;
+use crate::removable_confirm_iterator_vec::{InplaceRemovableConfirmVecIterator, RemovableConfirmIterator};
 use crate::removable_iterator::{RemovableItem, RemovableItemMut};
 use crate::takeable_iterator::{TakeableItem, TakeableItemMut};
 
@@ -89,6 +90,34 @@ pub trait InplaceVector<T> {
     /// - Removal is O(1) time complexity
     /// - The order of elements is not preserved when removing elements
     fn removable_iter_mut(&mut self) -> impl Iterator<Item = impl RemovableItemMut<T>>;
+
+    /// Returns a wrapper around iterator that allows removing elements during iteration.
+    /// The removals are not yet applied.
+    /// The wrapper is then used to confirm or cancel the removals.
+    ///
+    /// The iterator yields items that implement `RemovableItem<T>`, which provides
+    /// a `remove()` method to remove the current element.
+    /// The wrapper provides `confirm_removals()` and `cancel_removals()` methods to apply or cancel the removals.
+    ///
+    /// # Performance
+    ///
+    /// - Removal is O(1) time complexity
+    /// - The order of elements is not preserved when removing elements, even if the removals are cancelled.
+    fn removable_confirm_iter(&mut self) -> impl RemovableConfirmIterator<Item = impl RemovableItem<T>>;
+    
+    /// Returns a wrapper around mutable iterator that allows removing elements during iteration.
+    /// The removals are not yet applied.
+    /// The wrapper is then used to confirm or cancel the removals.
+    ///
+    /// The iterator yields items that implement `RemovableItem<T>`, which provides
+    /// a `remove()` method to remove the current element.
+    /// The wrapper provides `confirm_removals()` and `cancel_removals()` methods to apply or cancel the removals.
+    ///
+    /// # Performance
+    ///
+    /// - Removal is O(1) time complexity
+    /// - The order of elements is not preserved when removing elements, even if the removals are cancelled.
+    fn removable_confirm_iter_mut(&mut self) -> impl RemovableConfirmIterator<Item = impl RemovableItemMut<T>>;
 }
 
 impl<T> InplaceVector<T> for Vec<T> {
@@ -106,5 +135,13 @@ impl<T> InplaceVector<T> for Vec<T> {
     
     fn removable_iter_mut(&mut self) -> impl Iterator<Item = impl RemovableItemMut<T>> {
         InplaceVecIterator::new(self)
+    }
+
+    fn removable_confirm_iter(&mut self) -> impl RemovableConfirmIterator<Item=impl RemovableItem<T>> {
+        InplaceRemovableConfirmVecIterator::new(self)
+    }
+
+    fn removable_confirm_iter_mut(&mut self) -> impl RemovableConfirmIterator<Item=impl RemovableItemMut<T>> {
+        InplaceRemovableConfirmVecIterator::new(self)
     }
 }
