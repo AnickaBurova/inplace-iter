@@ -89,7 +89,8 @@ for item in confirm.iter() {
         item.remove(); // Efficiently remove even numbers
     }
 }
-// Multiple calls to `iter()` are allowed, and the subsequent iterations will not yield the removed elements.
+// Multiple calls to `iter()` are allowed,
+// and the subsequent iterations will not yield the removed elements.
 let next_iter = confirm.iter().map(|i| *i.get()).collect::<Vec<_>>();
 assert_eq!(next_iter, vec![1,5,3]);
 confirm.confirm_removals();
@@ -110,7 +111,8 @@ for item in confirm.iter() {
     }
 }
 confirm.cancel_removals();
-// Order after cancellation is not guaranteed. Also, if used on mutable iterator, the elements will stay
+// Order after cancellation is not guaranteed. 
+// Also, if used on mutable iterator, the elements will stay
 // modified after cancelling!
 assert_eq!(numbers, vec![1, 5, 3, 4, 2]);
 ```
