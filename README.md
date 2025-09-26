@@ -1,8 +1,5 @@
 # In-Place Iteration with Removal/Take Operations
 
-[![Crates.io](https://img.shields.io/crates/v/inplace-iter)](https://crates.io/crates/inplace-iter)
-[![Documentation](https://docs.rs/inplace-iter/badge.svg)](https://docs.rs/inplace-iter)
-[![License](https://img.shields.io/crates/l/inplace-iter)](LICENSE-MIT)
 
 A Rust library providing iterators that allow efficient in-place modification of collections
 with O(1) removal and take operations.
@@ -14,14 +11,6 @@ with O(1) removal and take operations.
 - **Safe Abstraction**: Encapsulates unsafe code behind a safe API
 - **Optional Lifetime Guard**: Additional runtime checks with `loop-lifetime-guard` feature (enabled by default)
 
-## Usage
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-inplace-iter = "0.1"
-```
 
 ## Examples
 
@@ -152,8 +141,3 @@ Licensed under either of:
 
 at your option.
 
-### Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-dual licensed as above, without any additional terms or conditions.
