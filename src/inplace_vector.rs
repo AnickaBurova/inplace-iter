@@ -145,3 +145,31 @@ impl<T> InplaceVector<T> for Vec<T> {
         InplaceRemovableConfirmVecIterator::new(self)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use super::*;
+
+    #[test]
+    fn test_hash_map() {
+        let a = vec!["a1", "a2", "a3"];
+        let b = vec!["b1", "b2", "b3"];
+        let c = vec!["c1", "c2", "c3"];
+        let mut m = HashMap::from([("a", a),("b", b), ("c", c)]);
+        for (i, item) in m.iter_mut().map(|(_, v)| v.takeable_iter()).flatten().enumerate() {
+            if i % 2 == 0 {
+                let v = item.take();
+                println!("{i}: taken {v}");
+            } else {
+                let v = item.get();
+                println!("{i}: {v}");
+            }
+        }
+
+        for (i, item) in m.values().flatten().enumerate() {
+            println!("{i}: {item}");
+        }
+
+    }
+}

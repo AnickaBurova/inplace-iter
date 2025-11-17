@@ -142,8 +142,21 @@ mod removable_confirm_iterator_vec;
 mod takeable_iterator;
 mod takeable_iterator_vec;
 
-pub mod inplace_vec_iterator;
+mod inplace_vec_iterator;
 mod inplace_vector;
+
+pub mod vector {
+    pub use crate::inplace_vec_iterator::{InplaceVecIterator, InplaceVecItem};
+    pub trait InplaceVectorRaw<'a, T> {
+        fn inplace_iter(&'a mut self) -> InplaceVecIterator<'a, T>;
+    }
+
+    impl<'a, T> InplaceVectorRaw<'a, T> for Vec<T> {
+        fn inplace_iter(&'a mut self) -> InplaceVecIterator<'a, T> {
+            InplaceVecIterator::new(self)
+        }
+    }
+}
 
 pub mod prelude {
     pub use crate::removable_iterator::RemovableItem;
